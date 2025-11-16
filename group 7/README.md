@@ -26,7 +26,7 @@ Simply add your genome files and run! The pipeline does everything automatically
 
 ```bash
 # Download the setup script
-wget [https://raw.githubusercontent.com/yourusername/prokaryotic-pipeline/main/setup_environment.sh](https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/setup_environment.sh)
+wget https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/setup_environment.sh
 chmod +x setup_environment.sh
 
 # Run it
