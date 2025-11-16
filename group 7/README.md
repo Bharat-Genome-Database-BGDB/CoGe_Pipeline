@@ -262,18 +262,6 @@ Want to improve this pipeline? Contributions are welcome!
 
 ---
 
-## 📄 License
-
-MIT License - free to use for research and commercial purposes.
-
----
-
-## 📞 Contact
-
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Email**: your.email@example.com
-
----
 
 ## ⭐ Like This Pipeline?
 
@@ -281,4 +269,4 @@ If you find this useful, please give it a star on GitHub! ⭐
 
 ---
 
-**Made with ❤️ for bioinformatics beginners and experts**
+**for bioinformatics beginners and experts**
