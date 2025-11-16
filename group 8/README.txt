@@ -76,7 +76,6 @@ Configuration
 
 Edit `config.sh` to modify pipeline parameters:
 
-```bash
 # Number of CPU threads to use
 THREADS=$(nproc)
 
@@ -134,4 +133,5 @@ Troubleshooting
 
 4. Tool not found:
    - Run `./setup_pipeline.sh` to check dependencies
+
    - Verify tools are in `$PATH`
