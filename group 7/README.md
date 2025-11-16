@@ -26,7 +26,7 @@ Simply add your genome files and run! The pipeline does everything automatically
 
 ```bash
 # Download the setup script
-wget https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/setup_environment.sh
+https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/setup_environment.sh
 chmod +x setup_environment.sh
 
 # Run it
@@ -38,8 +38,10 @@ The script will pause and ask you to add `environment.yml` file.
 ### Step 2: Add Environment File
 
 ```bash
+cd ~/genomics_pipeline
+
 # Download environment.yml to the pipeline folder
-wget -P ~/genomics_pipeline/ https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/environment.yml
+https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/environment.yml
 # Run setup again to install everything
 ./setup_environment.sh
 ```
@@ -59,12 +61,12 @@ cd ~/genomics_pipeline
 ### Step 4: Add MAIN script File
 ```bash
 # Add the main_automated script
-wget https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/run_automated.sh
+https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/run_automated.sh
 
 # add python script
-wget https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/generate_single_report.py
+https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/blob/main/group%207/generate_single_report.py
 
-chmod +x setup_environment.sh
+chmod +x run_automated-pipeline.sh
 
 # Run it!
 ./run_automated_pipeline.sh
