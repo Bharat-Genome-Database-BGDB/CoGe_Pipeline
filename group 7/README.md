@@ -70,7 +70,7 @@ chmod +x run_automated-pipeline.sh
 
 # Run it!
 ./run_automated_pipeline.sh
-
+```
 
 That's it! 🎉 Check the `results/` folder for your outputs.
 
