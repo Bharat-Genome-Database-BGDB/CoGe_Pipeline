@@ -104,7 +104,8 @@ After setup, you'll have this structure:
 │       ├── fimo/             (binding sites)
 │       └── report.html       📊 INTERACTIVE REPORT
 │
-├── databases/                 (Pfam, Rfam - auto-downloaded)
+├── data/
+│   └── [dbs]                (Pfam, Rfam - auto-downloaded)
 ├── logs/                      (pipeline logs)
 └── scripts/                   (pipeline scripts)
 ```
