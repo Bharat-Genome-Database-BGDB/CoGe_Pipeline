@@ -46,7 +46,7 @@ Transforms **raw genome sequences** into **comprehensive metabolic profiles** by
 
 ```mermaid
 graph TB
-    A[📁 Raw FASTQ Reads<br/>R1 & R2] --> B[🔍 FastQC<br/>Quality Assessment]
+    A[📁 Raw FASTQ Reads<br/>] --> B[🔍 FastQC<br/>Quality Assessment]
     B --> C[✂️ fastp<br/>Quality Trimming & Filtering]
     C --> D[🧩 SPAdes<br/>Genome Assembly]
     D --> E[🔬 Prokka<br/>Gene Prediction]
@@ -139,7 +139,7 @@ gem install parallel
 git clone https://github.com/takaram/kofam_scan.git
 cd kofam_scan && chmod +x exec_annotation
 
-# 4️⃣ Download KOfam database (~2.5 GB)
+# 4️⃣ Download KOfam database (~1.4 GB)
 mkdir -p ~/kofam_db && cd ~/kofam_db
 wget ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz
 tar -xvzf profiles.tar.gz
