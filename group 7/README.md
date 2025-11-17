@@ -233,24 +233,6 @@ cd ~/genomics_pipeline
 # View results
 firefox ~/genomics_pipeline/results/ecoli/report.html
 ```
-
----
-
-## 🎓 For Researchers
-
-If you use this pipeline in your research, please cite:
-
-```bibtex
-@software{prokaryotic_pipeline,
-  author = {Your Name},
-  title = {Prokaryotic Genome Regulatory Annotation Pipeline},
-  year = {2024},
-  url = {https://github.com/yourusername/prokaryotic-pipeline}
-}
-```
-
-Also cite the tools: Prokka, MEME Suite, HMMER, Infernal
-
 ---
 
 ## 🤝 Contributing
@@ -262,7 +244,6 @@ Want to improve this pipeline? Contributions are welcome!
 3. Submit a pull request
 
 ---
-
 
 ## ⭐ Like This Pipeline?
 
