@@ -467,7 +467,7 @@ graph TD
 | 🌐 **KEGG Database** | [www.kegg.jp](https://www.kegg.jp/) |
 | 🧬 **KOfamScan** | [GitHub](https://github.com/takaram/kofam_scan) |
 | 🔬 **Prokka** | [GitHub](https://github.com/tseemann/prokka) |
-| 🧩 **SPAdes** | [Documentation](https://cab.spbu.ru/software/spades/) |
+| 🧩 **SPAdes** | [Documentation](https://github.com/ablab/spades) |
 
 </div>
 
