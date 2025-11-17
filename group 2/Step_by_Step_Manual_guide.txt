@@ -1,0 +1,192 @@
+Setting Environment
+
+~/ .bashrc
+conda create -n odog_env python=3.9 -y
+conda activate odog_env
+
+Step 1 : FastQC
+
+conda install -y -c bioconda fastqc
+fastqc --version
+
+mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_fastqc_raw
+
+fastqc raw/Aeromonas_simiae/Aeromonas_simiae_R1_001.fastq.gz \
+       raw/Aeromonas_simiae/Aeromonas_simiae_R1_002.fastq.gz \
+       -o out/SAMPLE_fastqc_raw
+
+Step 2 : FastP
+
+conda install -y -c bioconda fastp
+fastp -v
+
+mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp
+
+fastp \
+  -i raw/Aeromonas_simiae/Aeromonas_simiae_R1_001.fastq.gz \
+  -I raw/Aeromonas_simiae/Aeromonas_simiae_R2_001.fastq.gz \
+  -o out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R1.fastq.gz \
+  -O out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R2.fastq.gz \
+  -h out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/report.html \
+  -j out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/report.json
+
+Step 3 : FastQC on clean reads
+
+mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_fastqc_clean
+
+fastqc \
+  out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R1.fastq.gz \
+  out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R2.fastq.gz \
+  -o out/Aeromonas_simiae/Aeromonas_simiae_fastqc_clean
+
+Step 4 : Spades Assembly
+
+conda install -y -c bioconda spades
+spades.py --version
+
+mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_spades
+
+spades.py \
+  -1 out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R1.fastq.gz \
+  -2 out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R2.fastq.gz \
+  -o out/Aeromonas_simiae/Aeromonas_simiae_spades \
+  --threads 4 \
+  --memory 4
+
+Step 5 : QUAST
+
+conda create -n quast_env python=3.9 -y
+conda activate quast_env
+conda install -y -c bioconda quast
+quast --version
+
+mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_quast
+
+quast \
+  out/Aeromonas_simiae/Aeromonas_simiae_spades/contigs.fasta \
+  -o out/Aeromonas_simiae/Aeromonas_simiae_quast
+
+Step 6 : Prokka
+
+conda create -n odog_env -c conda-forge -c bioconda -y prokka hmmer diamond blast prodigal perl-xml-simple
+
+mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_prokka
+
+prokka /home/rajgondane/Aeromonas_simiae/Aeromonas_simiae_spades/contigs.fasta \
+  --prefix contigs --cpus 4 --outdir /home/rajgondane/Automated_Test/prokka_out/contigs_prokka --force
+
+Step 7 : KofamScan
+
+wget ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz
+tar -xvzf profiles.tar.gz
+wget ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz
+gunzip ko_list.gz
+git clone https://github.com/takaram/kofam_scan.git
+chmod +x ~/kofam_scan/exec_annotation
+conda install -y -c conda-forge ruby
+
+mkdir -p out/Aeromonas_simiae/KofamScan
+
+/home/rajgondane/CoG_Automated/databases/kofam/kofam_scan/exec_annotation   -f detail-tsv   -o out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg.tsv   -p /home/rajgondane/CoG_Automated/databases/kofam/profiles/   -k /home/rajgondane/CoG_Automated/databases/kofam/ko_list   --cpu 4   out/Aeromonas_simiae/Aeromonas_simiae_prokka/Aeromonas_simiae.faa
+
+Output file : Aeromonas_simiae_kegg.tsv
+
+Step 8 : Filter Row with assigned KOs
+
+grep '^\*' /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg.tsv \
+  > /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg_filtered.tsv
+
+Output file : Aeromonas_simiae_kegg_filtered.tsv
+
+Step 9 : Extract KO ID list
+
+cut -f3 Aeromonas_simiae_kegg_filtered.tsv | sort -u > Aeromonas_simiae_KO_list.txt
+
+Output file : Aeromonas_simiae_KO_list.txt
+
+Step 10 : KO pathways mapping
+
+mkdir -p out/Aeromonas_simiae/pathways_mapping
+cd pathway_mappings/
+
+To get KO–pathway links:
+wget https://rest.kegg.jp/link/pathway/ko -O ko_to_pathway.tab
+To get pathway titles:
+wget https://rest.kegg.jp/list/pathway -O pathway_titles.tab
+
+cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+
+grep -Ff Aeromonas_simiae_KO_list.txt \
+/home/rajgondane/pathways_mapping/ko_to_pathway.tab \
+> Aeromonas_simiae_ko_pathway_filtered.tab
+grep 'map' Aeromonas_simiae_ko_pathway_filtered.tab \
+> Aeromonas_simiae_ko_pathway_filtered_clean.tab
+sed 's/ko://; s/path://;' Aeromonas_simiae_ko_pathway_filtered_clean.tab \
+> Aeromonas_simiae_ko_pathway_clean.tsv
+
+Output file : Aeromonas_simiae_ko_pathway_filtered.tab
+              Aeromonas_simiae_ko_pathway_filtered_clean.tab
+              Aeromonas_simiae_ko_pathway_clean.tsv
+
+Step 11 : Add Pathway titles
+
+cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+
+awk -F'\t' '
+NR==FNR { title[$1]=$2; next }
+{ print $1"\t"$2"\t"title[$2] }
+' /home/rajgondane/pathways_mapping/pathway_titles.tab \
+  Aeromonas_simiae_ko_pathway_clean.tsv \
+  > Aeromonas_simiae_ko_pathway_final.tsv
+
+Output file : Aeromonas_simiae_ko_pathway_final.tsv
+
+Step 12 : Clean KO table for Merging
+
+cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+
+awk -F'\t' '{
+    gsub(/"/, "", $7)
+    print $2"\t"$3"\t"$7
+}' Aeromonas_simiae_kegg_filtered.tsv \
+> Aeromonas_simiae_kegg_clean_final.tsv
+
+Output file : Aeromonas_simiae_kegg_clean_final.tsv
+
+Step 13 : Join KO with pathways into Master table
+
+/home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+
+awk -F'\t' '
+BEGIN{OFS="\t"}
+NR==FNR {map[$1]=$2"\t"$3; next}
+{print $0, (map[$2] ? map[$2] : "NA\tNA")}
+' Aeromonas_simiae_ko_pathway_final.tsv \
+  Aeromonas_simiae_kegg_clean_final.tsv \
+> Aeromonas_simiae_kegg_pathways.tsv
+
+Output file : Aeromonas_simiae_kegg_pathways.tsv
+
+Step 14 : Generate KEGG-style pathway counts
+
+/home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+
+awk -F'\t' '
+{
+    count[$2]++;   # count pathway ID
+    name[$2]=$3;   # store pathway name
+}
+END {
+    for (p in count)
+        print p "\t" name[p] "\t" count[p]
+}' Aeromonas_simiae_ko_pathway_final.tsv \
+| sort > Aeromonas_simiae_pathway_counts.tsv
+
+Output file : Aeromonas_simiae_pathway_counts.tsv
+
+
+
+
+
+
+
