@@ -1,4 +1,4 @@
-#Setting Environment
+Setting Environment
 
 ~/ .bashrc
 conda create -n odog_env python=3.9 -y
