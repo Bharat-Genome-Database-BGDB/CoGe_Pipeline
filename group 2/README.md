@@ -126,27 +126,18 @@ graph TB
 <div style="font-size: 15px;">
 
 ```bash
-# 1️⃣ Create conda environment
-conda create -n metabolic_pipeline python=3.8
-conda activate metabolic_pipeline
-
-# 2️⃣ Install bioinformatics tools
-conda install -c bioconda fastqc fastp spades prokka
-conda install -c conda-forge ruby
-gem install parallel
-
-# 3️⃣ Install KOfamScan
+# 1️⃣ Install KOfamScan Clone
 git clone https://github.com/takaram/kofam_scan.git
 cd kofam_scan && chmod +x exec_annotation
 
-# 4️⃣ Download KOfam database (~1.4 GB)
+# 2️⃣ Download KOfam database (~1.4 GB)
 mkdir -p ~/kofam_db && cd ~/kofam_db
 wget ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz
 tar -xvzf profiles.tar.gz
 wget ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz
 gunzip ko_list.gz
 
-# 5️⃣ Download KEGG mapping files
+# 3️⃣ Download KEGG mapping files
 mkdir -p ~/pathway_mappings && cd ~/pathway_mappings
 wget https://rest.kegg.jp/list/pathway -O pathway_titles.tab
 wget https://rest.kegg.jp/link/pathway/ko -O ko_to_pathway.tab
@@ -486,7 +477,7 @@ graph TD
 
 <div align="center" style="font-size: 15px;">
 
-**Developed by:** Group 2 - MSc Bioinformatics
+**Developed by:** MSc Bioinformatics S3
 
 **Tools:** FastQC | fastp | SPAdes | Prokka | KOfamScan | KEGG Database
 
