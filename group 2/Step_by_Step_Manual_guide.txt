@@ -1,25 +1,54 @@
-Setting Environment
+## 🎯 Pipeline Overview
 
-~/ .bashrc
+This automated pipeline processes raw genomic sequencing data through quality control, assembly, annotation, and metabolic pathway mapping using industry-standard bioinformatics tools.
+
+***
+
+## 🛠️ Setting Environment
+
+### 🐍 Create Conda Environment
+
+```bash
+~/.bashrc
 conda create -n odog_env python=3.9 -y
 conda activate odog_env
+```
 
-Step 1 : FastQC
+***
 
+## 📊 Step 1: Quality Control — FastQC (Raw Reads)
+
+### 🔧 Installation
+
+```bash
 conda install -y -c bioconda fastqc
 fastqc --version
+```
 
+### ▶️ Run FastQC
+
+```bash
 mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_fastqc_raw
 
 fastqc raw/Aeromonas_simiae/Aeromonas_simiae_R1_001.fastq.gz \
        raw/Aeromonas_simiae/Aeromonas_simiae_R1_002.fastq.gz \
        -o out/SAMPLE_fastqc_raw
+```
 
-Step 2 : FastP
+***
 
+## ✂️ Step 2: Read Trimming — fastp
+
+### 🔧 Installation
+
+```bash
 conda install -y -c bioconda fastp
 fastp -v
+```
 
+### ▶️ Run fastp
+
+```bash
 mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp
 
 fastp \
@@ -29,21 +58,37 @@ fastp \
   -O out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R2.fastq.gz \
   -h out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/report.html \
   -j out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/report.json
+```
 
-Step 3 : FastQC on clean reads
+***
 
+## 📈 Step 3: Quality Control — FastQC (Clean Reads)
+
+### ▶️ Run FastQC on Cleaned Data
+
+```bash
 mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_fastqc_clean
 
 fastqc \
   out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R1.fastq.gz \
   out/Aeromonas_simiae/Aeromonas_simiae_clean_fastp/Aeromonas_simiae_clean_R2.fastq.gz \
   -o out/Aeromonas_simiae/Aeromonas_simiae_fastqc_clean
+```
 
-Step 4 : Spades Assembly
+***
 
+## 🧩 Step 4: Genome Assembly — SPAdes
+
+### 🔧 Installation
+
+```bash
 conda install -y -c bioconda spades
 spades.py --version
+```
 
+### ▶️ Run SPAdes Assembly
+
+```bash
 mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_spades
 
 spades.py \
@@ -52,84 +97,167 @@ spades.py \
   -o out/Aeromonas_simiae/Aeromonas_simiae_spades \
   --threads 4 \
   --memory 4
+```
 
-Step 5 : QUAST
+> **📝 Note:** SPAdes uses de Bruijn graph algorithms optimized for bacterial genome assembly[2][4][1]
 
+***
+
+## 🎯 Step 5: Assembly Quality Assessment — QUAST
+
+### 🔧 Installation
+
+```bash
 conda create -n quast_env python=3.9 -y
 conda activate quast_env
 conda install -y -c bioconda quast
 quast --version
+```
 
+### ▶️ Run QUAST
+
+```bash
 mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_quast
 
 quast \
   out/Aeromonas_simiae/Aeromonas_simiae_spades/contigs.fasta \
   -o out/Aeromonas_simiae/Aeromonas_simiae_quast
+```
 
-Step 6 : Prokka
+***
 
+## 🔬 Step 6: Gene Prediction & Annotation — Prokka
+
+### 🔧 Installation
+
+```bash
 conda create -n odog_env -c conda-forge -c bioconda -y prokka hmmer diamond blast prodigal perl-xml-simple
+```
 
+### ▶️ Run Prokka
+
+```bash
 mkdir -p out/Aeromonas_simiae/Aeromonas_simiae_prokka
 
 prokka /home/rajgondane/Aeromonas_simiae/Aeromonas_simiae_spades/contigs.fasta \
-  --prefix contigs --cpus 4 --outdir /home/rajgondane/Automated_Test/prokka_out/contigs_prokka --force
+  --prefix contigs \
+  --cpus 4 \
+  --outdir /home/rajgondane/Automated_Test/prokka_out/contigs_prokka \
+  --force
+```
 
-Step 7 : KofamScan
+***
 
+## 🧬 Step 7: Enzyme Annotation — KOfamScan
+
+### 📥 Database Setup
+
+```bash
+# Download KOfam HMM profiles
 wget ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz
 tar -xvzf profiles.tar.gz
+
+# Download KO list
 wget ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz
 gunzip ko_list.gz
+
+# Clone KOfamScan tool
 git clone https://github.com/takaram/kofam_scan.git
 chmod +x ~/kofam_scan/exec_annotation
-conda install -y -c conda-forge ruby
 
+# Install Ruby
+conda install -y -c conda-forge ruby
+```
+
+### ▶️ Run KOfamScan
+
+```bash
 mkdir -p out/Aeromonas_simiae/KofamScan
 
-/home/rajgondane/CoG_Automated/databases/kofam/kofam_scan/exec_annotation   -f detail-tsv   -o out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg.tsv   -p /home/rajgondane/CoG_Automated/databases/kofam/profiles/   -k /home/rajgondane/CoG_Automated/databases/kofam/ko_list   --cpu 4   out/Aeromonas_simiae/Aeromonas_simiae_prokka/Aeromonas_simiae.faa
+/home/rajgondane/CoG_Automated/databases/kofam/kofam_scan/exec_annotation \
+  -f detail-tsv \
+  -o out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg.tsv \
+  -p /home/rajgondane/CoG_Automated/databases/kofam/profiles/ \
+  -k /home/rajgondane/CoG_Automated/databases/kofam/ko_list \
+  --cpu 4 \
+  out/Aeromonas_simiae/Aeromonas_simiae_prokka/Aeromonas_simiae.faa
+```
 
-Output file : Aeromonas_simiae_kegg.tsv
+**📄 Output file:** `Aeromonas_simiae_kegg.tsv`
 
-Step 8 : Filter Row with assigned KOs
+***
 
+## 🔎 Step 8: Filter Assigned KO Annotations
+
+### ▶️ Extract High-Confidence KO Hits
+
+```bash
 grep '^\*' /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg.tsv \
   > /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan/Aeromonas_simiae_kegg_filtered.tsv
+```
 
-Output file : Aeromonas_simiae_kegg_filtered.tsv
+**📄 Output file:** `Aeromonas_simiae_kegg_filtered.tsv`
 
-Step 9 : Extract KO ID list
+***
 
+## 📋 Step 9: Extract Unique KO IDs
+
+### ▶️ Generate KO ID List
+
+```bash
 cut -f3 Aeromonas_simiae_kegg_filtered.tsv | sort -u > Aeromonas_simiae_KO_list.txt
+```
 
-Output file : Aeromonas_simiae_KO_list.txt
+**📄 Output file:** `Aeromonas_simiae_KO_list.txt`
 
-Step 10 : KO pathways mapping
+***
 
+## 🗺️ Step 10: KEGG Pathway Mapping
+
+### 📥 Download KEGG Mapping Tables
+
+```bash
 mkdir -p out/Aeromonas_simiae/pathways_mapping
 cd pathway_mappings/
 
-To get KO–pathway links:
+# Download KO–pathway links
 wget https://rest.kegg.jp/link/pathway/ko -O ko_to_pathway.tab
-To get pathway titles:
-wget https://rest.kegg.jp/list/pathway -O pathway_titles.tab
 
+# Download pathway titles
+wget https://rest.kegg.jp/list/pathway -O pathway_titles.tab
+```
+
+### ▶️ Map KO IDs to Pathways
+
+```bash
 cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
 
+# Filter pathways for annotated KOs
 grep -Ff Aeromonas_simiae_KO_list.txt \
-/home/rajgondane/pathways_mapping/ko_to_pathway.tab \
-> Aeromonas_simiae_ko_pathway_filtered.tab
+  /home/rajgondane/pathways_mapping/ko_to_pathway.tab \
+  > Aeromonas_simiae_ko_pathway_filtered.tab
+
+# Keep only map pathways
 grep 'map' Aeromonas_simiae_ko_pathway_filtered.tab \
-> Aeromonas_simiae_ko_pathway_filtered_clean.tab
+  > Aeromonas_simiae_ko_pathway_filtered_clean.tab
+
+# Clean formatting
 sed 's/ko://; s/path://;' Aeromonas_simiae_ko_pathway_filtered_clean.tab \
-> Aeromonas_simiae_ko_pathway_clean.tsv
+  > Aeromonas_simiae_ko_pathway_clean.tsv
+```
 
-Output file : Aeromonas_simiae_ko_pathway_filtered.tab
-              Aeromonas_simiae_ko_pathway_filtered_clean.tab
-              Aeromonas_simiae_ko_pathway_clean.tsv
+**📄 Output files:**
+- `Aeromonas_simiae_ko_pathway_filtered.tab`
+- `Aeromonas_simiae_ko_pathway_filtered_clean.tab`
+- `Aeromonas_simiae_ko_pathway_clean.tsv`
 
-Step 11 : Add Pathway titles
+***
 
+## 📚 Step 11: Add Pathway Titles
+
+### ▶️ Annotate Pathways with Descriptions
+
+```bash
 cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
 
 awk -F'\t' '
@@ -138,11 +266,17 @@ NR==FNR { title[$1]=$2; next }
 ' /home/rajgondane/pathways_mapping/pathway_titles.tab \
   Aeromonas_simiae_ko_pathway_clean.tsv \
   > Aeromonas_simiae_ko_pathway_final.tsv
+```
 
-Output file : Aeromonas_simiae_ko_pathway_final.tsv
+**📄 Output file:** `Aeromonas_simiae_ko_pathway_final.tsv`
 
-Step 12 : Clean KO table for Merging
+***
 
+## 🧹 Step 12: Clean KO Table for Merging
+
+### ▶️ Prepare KO Annotation Table
+
+```bash
 cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
 
 awk -F'\t' '{
@@ -150,12 +284,18 @@ awk -F'\t' '{
     print $2"\t"$3"\t"$7
 }' Aeromonas_simiae_kegg_filtered.tsv \
 > Aeromonas_simiae_kegg_clean_final.tsv
+```
 
-Output file : Aeromonas_simiae_kegg_clean_final.tsv
+**📄 Output file:** `Aeromonas_simiae_kegg_clean_final.tsv`
 
-Step 13 : Join KO with pathways into Master table
+***
 
-/home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+## 🔗 Step 13: Join KO Annotations with Pathways
+
+### ▶️ Create Master Table
+
+```bash
+cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
 
 awk -F'\t' '
 BEGIN{OFS="\t"}
@@ -164,12 +304,18 @@ NR==FNR {map[$1]=$2"\t"$3; next}
 ' Aeromonas_simiae_ko_pathway_final.tsv \
   Aeromonas_simiae_kegg_clean_final.tsv \
 > Aeromonas_simiae_kegg_pathways.tsv
+```
 
-Output file : Aeromonas_simiae_kegg_pathways.tsv
+**📄 Output file:** `Aeromonas_simiae_kegg_pathways.tsv`
 
-Step 14 : Generate KEGG-style pathway counts
+***
 
-/home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
+## 📊 Step 14: Generate Pathway Gene Counts
+
+### ▶️ Count Genes per Pathway
+
+```bash
+cd /home/rajgondane/CoG_Automated/out/Aeromonas_simiae/KofamScan
 
 awk -F'\t' '
 {
@@ -181,12 +327,54 @@ END {
         print p "\t" name[p] "\t" count[p]
 }' Aeromonas_simiae_ko_pathway_final.tsv \
 | sort > Aeromonas_simiae_pathway_counts.tsv
+```
 
-Output file : Aeromonas_simiae_pathway_counts.tsv
+**📄 Output file:** `Aeromonas_simiae_pathway_counts.tsv`
 
+***
 
+## 🎉 Final Output Summary
 
+### 📁 Key Output Files
 
+| File | Description | 📊 Use |
+|------|-------------|--------|
+| `Aeromonas_simiae_kegg.tsv` | All KO annotations | Complete annotation data |
+| `Aeromonas_simiae_kegg_filtered.tsv` | High-confidence KO hits | Quality-filtered annotations |
+| `Aeromonas_simiae_KO_list.txt` | Unique KO identifiers | Enzyme inventory |
+| `Aeromonas_simiae_ko_pathway_final.tsv` | KO-pathway mappings | Pathway connections |
+| `Aeromonas_simiae_kegg_pathways.tsv` | Master annotation table | Complete functional profile |
+| `Aeromonas_simiae_pathway_counts.tsv` | ⭐ **Pathway gene counts** | **Metabolic capabilities summary** |
 
+---
 
+## 🧪 Biological Insights
 
+The final `pathway_counts.tsv` reveals:
+
+✅ **Complete metabolic pathways** (high gene counts)  
+✅ **Partial pathways** (low gene counts)  
+✅ **Energy metabolism** capabilities  
+✅ **Biosynthetic pathways** presence  
+✅ **Environmental adaptation** potential  
+✅ **Functional comparison** with other organisms  
+
+***
+
+## 👥 Contributors
+
+**Group 2 — MSc Bioinformatics**  
+*Metabolic Pathway & Enzyme Annotation Pipeline Project*
+
+***
+
+## 📌 References
+
+Pipeline utilizes industry-standard tools:
+- **FastQC** — Read quality assessment
+- **fastp** — Read preprocessing
+- **SPAdes** — Genome assembly[4][1]
+- **QUAST** — Assembly quality control
+- **Prokka** — Gene prediction
+- **KOfamScan** — KEGG enzyme annotation
+- **KEGG** — Pathway mapping database
