@@ -6,15 +6,13 @@ echo "=================================================="
 echo "🧬 Automated Bacterial Genome Functional Annotation"
 echo "=================================================="
 
-# Configuration 
-THREADS=$(nproc)
-E_VALUE=1e-5
-MAX_TARGET_SEQS=1
-INPUT_GENOMES="genomes"
-
-# DATABASE PATHS 
-DIAMOND_DB="databases/swissprot.dmnd"
-PFAM_DB="databases/Pfam-A.hmm"
+# Source configuration
+if [ -f "config.sh" ]; then
+    source config.sh
+else
+    echo "❌ config.sh not found. Please run setup_pipeline.sh first."
+    exit 1
+fi
 
 # Create directory structure
 mkdir -p scripts
@@ -44,32 +42,27 @@ check_dependencies() {
 check_databases() {
     log "📊 Checking databases..."
     
-    # Check DIAMOND database with absolute path check
     if [ -f "$DIAMOND_DB" ]; then
         log "   ✅ DIAMOND database found: $(basename $DIAMOND_DB)"
     else
         log "❌ DIAMOND database not found at: $DIAMOND_DB"
-        log "   Current directory: $(pwd)"
-        log "   Files in databases/:"
-        ls -la databases/ | head -10
+        log "   Please run setup_pipeline.sh to download databases"
         exit 1
     fi
     
-    # Check Pfam database
     if [ -f "$PFAM_DB" ]; then
         log "   ✅ Pfam database found: $(basename $PFAM_DB)"
     else
         log "❌ Pfam database not found at: $PFAM_DB"
+        log "   Please run setup_pipeline.sh to download databases"
         exit 1
     fi
 }
-
 
 # Function to preprocess genomes
 preprocess_genomes() {
     log "🔧 Preprocessing genomes..."
     
-    # Check for input genomes
     if [ ! -d "$INPUT_GENOMES" ] || [ -z "$(ls -A $INPUT_GENOMES/*.fna 2>/dev/null)" ]; then
         log "❌ Error: No .fna files found in $INPUT_GENOMES/"
         log "   Please place your bacterial genome files in the $INPUT_GENOMES/ directory"
@@ -80,7 +73,6 @@ preprocess_genomes() {
         genome_name=$(basename "$genome" .fna)
         output_file="preprocessed/${genome_name}.fna"
         
-        # Skip if already preprocessed
         if [ -f "$output_file" ]; then
             log "   ⏩ Already preprocessed: $genome_name"
             continue
@@ -88,13 +80,11 @@ preprocess_genomes() {
         
         log "   Preprocessing: $genome_name"
         
-        # Check if file exists and is not empty
         if [ ! -s "$genome" ]; then
             log "   ⚠️  Skipping empty file: $genome"
             continue
         fi
         
-        # Remove duplicate sequences and ensure proper FASTA format
         awk '
         /^>/ {
             if (seqlen) {
@@ -115,13 +105,11 @@ preprocess_genomes() {
             }
         }' "$genome" > "$output_file"
         
-        # Validate the preprocessed file
         if [ ! -s "$output_file" ]; then
             log "   ❌ Preprocessing failed for: $genome_name"
             exit 1
         fi
         
-        # Count sequences in the preprocessed file
         seq_count=$(grep -c "^>" "$output_file" 2>/dev/null || echo "0")
         log "     → Sequences: $seq_count"
     done
@@ -135,13 +123,11 @@ predict_genes() {
     
     log "   🧬 Gene prediction: $genome_name"
     
-    # Validate input file
     if [ ! -s "$genome" ]; then
         log "   ❌ Genome file is empty: $genome"
         return 1
     fi
     
-    # Skip if already processed
     if [ -f "${output_prefix}.faa" ] && [ -s "${output_prefix}.faa" ]; then
         local gene_count=$(grep -c ">" "${output_prefix}.faa" 2>/dev/null || echo "0")
         log "   ⏩ Already processed: $genome_name ($gene_count genes)"
@@ -156,7 +142,6 @@ predict_genes() {
         -p single \
         -q 2> "logs/prodigal_${genome_name}.log"
     
-    # Check if Prodigal produced output
     if [ ! -f "${output_prefix}.faa" ] || [ ! -s "${output_prefix}.faa" ]; then
         log "   ❌ Prodigal failed to generate output for: $genome_name"
         return 1
@@ -179,13 +164,11 @@ homology_search() {
     
     log "   🔍 Homology search: $genome_name"
     
-    # Check if protein file exists and has sequences
     if [ ! -s "$proteins" ]; then
         log "   ⚠️  No protein sequences for: $genome_name"
         return 1
     fi
     
-    # Skip if already processed
     if [ -f "${output_prefix}.tsv" ] && [ -s "${output_prefix}.tsv" ]; then
         local hit_count=$(wc -l < "${output_prefix}.tsv" 2>/dev/null || echo "0")
         log "   ⏩ Already processed: $genome_name ($hit_count hits)"
@@ -218,13 +201,11 @@ domain_detection() {
     
     log "   🏷️  Domain detection: $genome_name"
     
-    # Check if protein file exists and has sequences
     if [ ! -s "$proteins" ]; then
         log "   ⚠️  No protein sequences for: $genome_name"
         return 1
     fi
     
-    # Skip if already processed
     if [ -f "${output_prefix}.domtblout" ] && [ -f "output/hmmer/${genome_name}_domain_count.txt" ]; then
         local domain_count=$(cat "output/hmmer/${genome_name}_domain_count.txt" 2>/dev/null || echo "0")
         log "   ⏩ Already processed: $genome_name ($domain_count domains)"
@@ -239,15 +220,12 @@ domain_detection() {
         "$PFAM_DB" \
         "$proteins" 2> "logs/hmmer_${genome_name}.log"
     
-    # Count domains properly
     local domain_count=0
     if [ -f "${output_prefix}.domtblout" ]; then
         domain_count=$(grep -v '^#' "${output_prefix}.domtblout" | awk 'NF>=4 {count++} END {print count+0}' 2>/dev/null || echo "0")
     fi
     
     log "     → Pfam domains: $domain_count"
-    
-    # Save domain count for reporting
     echo "$domain_count" > "output/hmmer/${genome_name}_domain_count.txt"
 }
 
@@ -290,7 +268,7 @@ def combine_annotations(genome_name):
                     if gene_id in genes:
                         genes[gene_id]['swissprot'] = f"{swissprot_id}: {description}"
 
-    # Read Pfam domains - CORRECTED PARSING
+    # Read Pfam domains
     dom_file = f"output/hmmer/{genome_name}.domtblout"
     total_domains = 0
     domains_per_gene = {}
@@ -301,9 +279,8 @@ def combine_annotations(genome_name):
                 if not line.startswith('#'):
                     parts = line.strip().split()
                     if len(parts) >= 4:
-                        # Try to find gene ID in different positions
                         gene_id = None
-                        for pos in [0, 3]:  # Try position 0 and 3
+                        for pos in [0, 3]:
                             if pos < len(parts):
                                 candidate = parts[pos]
                                 if candidate in genes:
@@ -352,7 +329,6 @@ combine_annotations() {
     
     log "   📊 Combining annotations: $genome_name"
     
-    # Skip if already processed
     if [ -f "output/combined/${genome_name}_annotations.tsv" ]; then
         log "   ⏩ Already combined: $genome_name"
         return 0
@@ -387,7 +363,7 @@ def generate_summary(genome_name):
         with open(tsv_file) as f:
             swissprot_hits = sum(1 for line in f)
 
-    # Get domain count from multiple sources
+    # Get domain count
     domain_count_file = f"output/hmmer/{genome_name}_domain_count.txt"
     if os.path.exists(domain_count_file):
         with open(domain_count_file) as f:

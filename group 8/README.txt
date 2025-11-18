@@ -1,8 +1,8 @@
-Automated Bacterial Genome Functional Annotation Pipeline
+🧬 Automated Bacterial Genome Functional Annotation Pipeline
 A comprehensive, automated pipeline for functional annotation of bacterial genomes using gene prediction, homology searching, and domain detection.
 
 
-Overview
+📋 Overview
 This pipeline provides a complete workflow for annotating bacterial genomes with:
 - Gene Prediction using Prodigal
 - Homology Search against SwissProt using DIAMOND
@@ -55,7 +55,7 @@ The pipeline automatically configures with optimal settings
 You can customize parameters by editing `config.sh` after setup.
 
 
-Output Interpretation
+📈Output Interpretation
 
 Annotation Table Columns:
 - Gene_ID: Unique identifier for each predicted gene
