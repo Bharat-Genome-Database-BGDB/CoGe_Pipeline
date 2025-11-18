@@ -1,137 +1,70 @@
 Automated Bacterial Genome Functional Annotation Pipeline
+A comprehensive, automated pipeline for functional annotation of bacterial genomes using gene prediction, homology searching, and domain detection.
 
-An automated pipeline for functional annotation of bacterial genomes using Prodigal, DIAMOND, and HMMER.
 
-📋 Overview
-
-This pipeline performs:
+Overview
+This pipeline provides a complete workflow for annotating bacterial genomes with:
 - Gene Prediction using Prodigal
 - Homology Search against SwissProt using DIAMOND
-- Domain Detection against Pfam using HMMER
-- Combined Annotation output in TSV format
-- HTML Reports for visualization
+- Domain Detection using Pfam databases with HMMER
+- Reporting with HTML and text summaries
 
 
-Quick Start (in bash)
 
-1. Setup Pipeline
-./setup_pipeline.sh
-
-2. Add Your Genomes
-# Place your bacterial genome files in the genomes directory
-mkdir -p genomes
-cp your_genomes/*.fna genomes/
-
-3. Run Pipeline
-./auto_pipeline.sh
+Ensure you have the following tools installed:
+- Prodigal - Gene prediction
+- DIAMOND - Fast protein alignment
+- HMMER - Domain detection
+- Python 3 - For reporting scripts
+- wget/curl - For database downloads
 
 
-Prerequisites - Required Tools (use steps below or manually download each tool)
+Installation & Setup
+1. Clone or download the pipeline files
+   # Make scripts executable
+   chmod +x setup_pipeline.sh auto_pipeline.sh
 
-1. Install Prodigal
-# Ubuntu/Debian
-sudo apt-get install prodigal
-# Conda
-conda install -c bioconda prodigal
+2. Run the setup script (downloads databases automatically)
+   ./setup_pipeline.sh
 
-2. Install DIAMOND
-# Ubuntu/Debian
-sudo apt-get install diamond
-# Conda  
-conda install -c bioconda diamond
+3. Place your genome files in the `genomes/` directory
+   # Example: copy your .fna files
+   cp your_genomes/*.fna genomes/
 
-3. Install HMMER
-# Ubuntu/Debian
-sudo apt-get install hmmer
-# Conda
-conda install -c bioconda hmmer
+4. Run the annotation pipeline
+   ./auto_pipeline.sh
 
 
-Required Database Downloads (use steps below or manually download each database)
+Pipeline Steps:
+The pipeline executes the following steps for each genome:
 
-1. SwissProt Database for DIAMOND
-# Create databases directory
-mkdir -p databases
-# Download SwissProt
-wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
-gunzip uniprot_sprot.fasta.gz
-
-# Create DIAMOND database
-diamond makedb --in uniprot_sprot.fasta -d databases/swissprot.dmnd
-
-# Clean up
-rm uniprot_sprot.fasta
-
- 2. Pfam Database for HMMER
-# Download Pfam-A database
-wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
-gunzip Pfam-A.hmm.gz
-mv Pfam-A.hmm databases/
-# Optional: Compress for faster searching
-hmmpress databases/Pfam-A.hmm
-
+1. Preprocessing - Format validation and sequence deduplication
+2. Gene Prediction - Identify coding sequences with Prodigal
+3. Homology Search - BLASTp against SwissProt using DIAMOND
+4. Domain Detection - Identify protein domains with HMMER/Pfam
+5. Annotation Combination - Merge all results into comprehensive tables
+6. Report Generation - Create HTML and text summaries
 
 
 Configuration
-
-Edit `config.sh` to modify pipeline parameters:
-
-# Number of CPU threads to use
-THREADS=$(nproc)
-
-# E-value threshold for searches
-E_VALUE=1e-5
-
-# Database paths
-DIAMOND_DB="databases/swissprot.dmnd"
-PFAM_DB="databases/Pfam-A.hmm"
+The pipeline automatically configures with optimal settings
+- Threads: Uses all available CPU cores
+- E-value: 1e-5 for homology searches
+- Max targets: 1 best hit per sequence
+- Input format: FASTA files (.fna extension)
+You can customize parameters by editing `config.sh` after setup.
 
 
-📊 Output Files
+Output Interpretation
 
-For each genome, the pipeline generates:
+Annotation Table Columns:
+- Gene_ID: Unique identifier for each predicted gene
+- Protein_Description: Functional description from gene prediction
+- SwissProt_Annotation: Best match from SwissProt database
+- Pfam_Domains: Detected protein domains
+- Domain_Count: Number of domains per gene
 
--Gene Predictions: `.faa` (proteins), `.fna` (genes), `.gff` (annotations)
-- Homology Results: SwissProt hits in TSV format
-- Domain Annotations: Pfam domains in domtblout format
-- Combined TSV: Integrated annotations with all results
-- HTML Report: Visual summary with statistics
-- Text Summary: Quick overview of results
-
-
-
-
-Usage Examples
-
-#run the pipeline
-./auto_pipeline.sh
-
-#Debug Database Paths
-./debug_check.sh
-
-#Process Specific Genome
-# Manual processing example
-prodigal -i genomes/your_genome.fna -a output/prodigal/your_genome.faa -o output/prodigal/your_genome.gff
-diamond blastp --db databases/swissprot.dmnd --query output/prodigal/your_genome.faa --out output/diamond/your_genome.tsv
-hmmscan --cpu 8 --domtblout output/hmmer/your_genome.domtblout databases/Pfam-A.hmm output/prodigal/your_genome.faa
-
-
-
-
-Troubleshooting
-
-1. Database not found:
-   ./debug_check.sh  # Verify database paths
-
-2. No .fna files in genomes/:
-   - Ensure genome files have `.fna` extension
-   - Check file permissions
-
-3. Out of memory:
-   - Reduce `THREADS` in `config.sh`
-   - Process genomes sequentially
-
-4. Tool not found:
-   - Run `./setup_pipeline.sh` to check dependencies
-
-   - Verify tools are in `$PATH`
+Report Metrics:
+- Annotation Coverage: Percentage of genes with SwissProt hits
+- Domain Density: Average domains per gene
+- Functional Categories: Based on SwissProt and Pfam annotations
