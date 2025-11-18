@@ -1,6 +1,6 @@
 Setting Environment
 
-~/ .bashrc
+~/ .bashrc OR conda activate base
 conda create -n odog_env python=3.9 -y
 conda activate odog_env
 
