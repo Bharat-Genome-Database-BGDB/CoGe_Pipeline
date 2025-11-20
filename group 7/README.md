@@ -322,14 +322,14 @@ graph TB
     style A fill:#000000,stroke:#01579b,stroke-width:3px
     style B fill:#000000,stroke:#e65100,stroke-width:2px
     style C fill:#000000,stroke:#4a148c,stroke-width:2px
-    style D fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    style E fill:#fff9c4,stroke:#f57f17,stroke-width:2px
-    style F fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    style G fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    style H fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    style I fill:#e8eaf6,stroke:#1a237e,stroke-width:2px
-    style J fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-    style K fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    style D fill:#000000,stroke:#1b5e20,stroke-width:2px
+    style E fill:#000000,stroke:#f57f17,stroke-width:2px
+    style F fill:#000000,stroke:#880e4f,stroke-width:2px
+    style G fill:#000000,stroke:#004d40,stroke-width:2px
+    style H fill:#000000,stroke:#33691e,stroke-width:2px
+    style I fill:#000000,stroke:#1a237e,stroke-width:2px
+    style J fill:#000000,stroke:#e65100,stroke-width:2px
+    style K fill:#000000,stroke:#2e7d32,stroke-width:3px
 ```
 
 ---
