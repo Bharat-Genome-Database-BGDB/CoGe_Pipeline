@@ -609,33 +609,6 @@ firefox ~/genomics_pipeline/results/ecoli_k12/report.html
 
 ---
 
-## 🆘 Need Help?
-
-<table>
-<tr>
-<td width="33%" align="center">
-
-### 🐛 Found a Bug?
-[Report an Issue](https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/issues)
-
-</td>
-<td width="33%" align="center">
-
-### 💬 Have Questions?
-[Start a Discussion](https://github.com/Bharat-Genome-Database-BGDB/CoGe_Pipeline/discussions)
-
-</td>
-<td width="33%" align="center">
-
-### 📧 Contact Us
-genome.bgdb@gmail.com
-
-</td>
-</tr>
-</table>
-
----
-
 ## 🤝 Contributing
 
 We welcome contributions! Here's how:
